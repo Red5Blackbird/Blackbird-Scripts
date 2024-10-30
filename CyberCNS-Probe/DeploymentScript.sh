@@ -85,8 +85,8 @@ read -p "> " email_domain
 # Function to configure and restart Postfix
 configure_postfix() {
     echo -e "${YELLOW}Configuring Postfix for direct send using an SMTP relay...${NC}"
-    read -p "Enter the SMTP relay server (e.g., smtp-relay.example.com): " smtp_server
-    read -p "Enter the SMTP relay port (e.g., 25): " smtp_port
+    read -p "${YELLOW}Enter the SMTP relay server (e.g., smtp-relay.example.com):${NC} " smtp_server
+    read -p "${YELLOW}Enter the SMTP relay port (e.g., 25):${NC} " smtp_port
 
     # Get the system hostname
     system_hostname=$(hostname)
@@ -107,7 +107,7 @@ EOL
 
 # Test email function
 send_test_email() {
-    read -p "Enter the email address to send a test email to: " test_email
+    read -p "${YELLOW}Enter the email address to send a test email to:${NC} " test_email
     echo -e "${GREEN}Mailutils and Postfix direct send setup complete${NC}" | mail -s "Test Email" "$test_email" -a "From: ${system_hostname}@${email_domain}"
     echo -e "${YELLOW}A test email has been sent to $test_email.${NC}"
 }
@@ -118,7 +118,7 @@ send_test_email
 
 # Prompt user to confirm receipt, with option to reconfigure if necessary
 while true; do
-    read -p "Please check your inbox and confirm if you received the test email (Y/N): " email_received
+    read -p "${YELLOW}Please check your inbox and confirm if you received the test email (Y/N): ${NC}" email_received
     if [[ "$email_received" =~ ^[yY]([eE][sS])?$ ]]; then
         echo -e "${GREEN}Email confirmed received. Postfix setup complete.${NC}"
         break
@@ -136,7 +136,7 @@ echo -e "${GREEN}Postfix direct send setup complete.${NC}"
 # Configure Unattended Upgrades
 # ----------------------------
 
-read -p "Enter Notifications email address to send alerts to.." email_alert
+read -p "${YELLOW}Enter Notifications email address to send alerts to..${NC}" email_alert
 echo -e "${YELLOW}Configuring unattended-upgrades...${NC}"
 sudo dpkg-reconfigure --priority=low unattended-upgrades
 
@@ -181,10 +181,10 @@ sudo apt install libopenscap8
 
 echo -e "${YELLOW}Starting CyberCNS Probe installation...${NC}"
 while true; do
-    read -p "Please enter Company ID: " companyID
-    read -p "Please enter Tenant ID: " tenantID
+    read -p "${YELLOW}Please enter Company ID:${NC} " companyID
+    read -p "${YELLOW}Please enter Tenant ID:${NC} " tenantID
 
-    read -p "You entered Company ID: $companyID and Tenant ID: $tenantID. Confirm? (Y/N): " confirm
+    read -p "${YELLOW}You entered Company ID: $companyID and Tenant ID: $tenantID. Confirm? (Y/N):${NC}" confirm
     if [[ "$confirm" =~ ^[yY]([eE][sS])?$ ]]; then
         break
     else
@@ -220,9 +220,9 @@ username = "serveradmin"
 
 # Prompt for the new password
 echo -e "${YELLOW}Please enter a new password for '$username':${NC}"
-read -sp "New password: " new_password
+read -sp "${YELLOW}New password:${NC} " new_password
 echo
-read -sp "Confirm new password: " confirm_password
+read -sp "${YELLOW}Confirm new password:${NC} " confirm_password
 echo
 
 # Check if passwords match
