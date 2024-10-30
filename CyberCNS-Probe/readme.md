@@ -27,16 +27,9 @@ This script automates the setup and deployment process for CyberCNS probes on Bl
 1. **Download the Script**
    - Use the following command to download, set execute permissions, and run the script:
      ```bash
-     curl -L -o DeploymentScript.sh "https://raw.githubusercontent.com/Red5Blackbird/Blackbird-Scripts/refs/heads/main/CyberCNS-Probe/DeploymentScript.sh?token=GHSAT0AAAAAACZW4L7SPFQHTWU2IP6VQQWWZZBUJ7A" && chmod +x DeploymentScript.sh && ./DeploymentScript.sh
+     curl -L -o DeploymentScript.sh "https://raw.githubusercontent.com/Red5Blackbird/Blackbird-Scripts/refs/heads/main/CyberCNS-Probe/DeploymentScript.sh" && chmod +x DeploymentScript.sh && ./DeploymentScript.sh
      ```
-
-2. **Run the Script**
-   - Execute the script as root or with `sudo`:
-     ```bash
-     sudo ./DeploymentScript.sh
-     ```
-
-3. **Follow Prompts**
+2. **Follow Prompts**
    - Enter required information when prompted:
      - New hostname
      - SMTP relay details
