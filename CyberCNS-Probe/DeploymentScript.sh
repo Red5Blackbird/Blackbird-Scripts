@@ -211,3 +211,32 @@ if [[ $? -eq 0 ]]; then
 else
     echo -e "${RED}Installation failed. Please check the provided details and try again.${NC}"
 fi
+
+# ----------------------------
+# Update ServerAdmin password
+# ----------------------------
+username = "serveradmin"
+
+# Prompt for the new password
+echo -e "${YELLOW}Please enter a new password for '$username':${NC}"
+read -sp "New password: " new_password
+echo
+read -sp "Confirm new password: " confirm_password
+echo
+
+# Check if passwords match
+if [[ "$new_password" != "$confirm_password" ]]; then
+    echo -e "${RED}Passwords do not match. Exiting.${NC}"
+    exit 1
+fi
+
+# Update the user's password
+echo "$username:$new_password" | sudo chpasswd
+
+# Confirm password reset
+if [[ $? -eq 0 ]]; then
+    echo -e "${GREEN}Password for user '$username' has been successfully reset.${NC}"
+else
+    echo -e "${RED}Failed to reset the password for user '$username'.${NC}"
+    exit 1
+fi
