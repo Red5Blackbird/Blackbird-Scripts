@@ -158,7 +158,7 @@ Unattended-Upgrade::Automatic-Reboot-Time "02:00";
 Unattended-Upgrade::Remove-New-Unused-Dependencies "true";
 Unattended-Upgrade::Remove-Unused-Dependencies "true";
 Unattended-Upgrade::Remove-Unused-Kernel-Packages "true";
-Unattended-Upgrade::Sender "$(hostname)"
+Unattended-Upgrade::Sender "$(hostname)";
 EOL
 
 echo -e "${YELLOW}Testing unattended-upgrades setup...${NC}"
