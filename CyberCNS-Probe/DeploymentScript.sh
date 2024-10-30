@@ -136,6 +136,7 @@ echo -e "${GREEN}Postfix direct send setup complete.${NC}"
 # Configure Unattended Upgrades
 # ----------------------------
 
+read -p "Enter Notifications email address to send alerts to.." email_alert
 echo -e "${YELLOW}Configuring unattended-upgrades...${NC}"
 sudo dpkg-reconfigure --priority=low unattended-upgrades
 
@@ -148,7 +149,7 @@ EOL
 echo -e "${YELLOW}Setting up email alerts for unattended upgrades...${NC}"
 sudo tee /etc/apt/apt.conf.d/50unattended-upgrades > /dev/null <<EOL
 Unattended-Upgrade::AutoFixInterruptedDpkg "true";
-Unattended-Upgrade::Mail "msanotifications@blackbirdit.com.au";
+Unattended-Upgrade::Mail "$email_alert";
 Unattended-Upgrade::MailReport "always";
 Unattended-Upgrade::MailOnlyOnError "true";
 Unattended-Upgrade::OnlyOnACPower "true";
