@@ -172,6 +172,7 @@ echo -e "${GREEN}Automatic updates enabled, with email alerts configured.${NC}"
 echo -e "${YELLOW}Installing nmap service...${NC}"
 sudo apt-get install nmap -y
 sudo apt install openscap-scanner
+sudo apt install libopenscap8
 
 # ----------------------------
 # CyberCNS Probe Installation
