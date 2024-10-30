@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Color codes
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
 #-----------------------------
 # CyberCNS Deployment Script
 # For Blackbird Probe VM's
@@ -12,36 +18,37 @@
 # ----------------------------
 
 # Prompt for new hostname
-read -p "Enter the new hostname: " new_hostname
+echo -e "${YELLOW}Enter the new hostname:${NC}"
+read -p "> " new_hostname
 
 # Validate input
 if [[ -z "$new_hostname" ]]; then
-    echo "Hostname cannot be empty. Exiting."
+    echo -e "${RED}Hostname cannot be empty. Exiting.${NC}"
     exit 1
 fi
 
 # Set the hostname temporarily and update configuration files
-echo "Setting temporary hostname to $new_hostname..."
+echo -e "${GREEN}Setting temporary hostname to $new_hostname...${NC}"
 sudo hostnamectl set-hostname "$new_hostname"
 
-echo "Updating /etc/hostname with $new_hostname..."
+echo -e "${GREEN}Updating /etc/hostname with $new_hostname...${NC}"
 echo "$new_hostname" | sudo tee /etc/hostname > /dev/null
 
 # Update /etc/hosts with the new hostname
-echo "Updating /etc/hosts..."
+echo -e "${GREEN}Updating /etc/hosts...${NC}"
 current_hostname=$(hostname)
 sudo sed -i "s/$current_hostname/$new_hostname/g" /etc/hosts
 
 # Confirm hostname update
-echo "Hostname updated successfully to $new_hostname."
-echo "Verifying the new hostname:"
+echo -e "${GREEN}Hostname updated successfully to $new_hostname.${NC}"
+echo -e "${GREEN}Verifying the new hostname:${NC}"
 hostnamectl
 
 # ----------------------------
 # Install VM Tools
 # ----------------------------
 
-echo "Installing Open VM Tools..."
+echo -e "${YELLOW}Installing Open VM Tools...${NC}"
 sudo apt-get update -y
 sudo apt-get install -y open-vm-tools
 
@@ -49,7 +56,7 @@ sudo apt-get install -y open-vm-tools
 # Set DNS Servers (Cloudflare and Google)
 # ----------------------------
 
-echo "Backing up and updating DNS servers in /etc/systemd/resolved.conf..."
+echo -e "${YELLOW}Backing up and updating DNS servers in /etc/systemd/resolved.conf...${NC}"
 sudo cp /etc/systemd/resolved.conf /etc/systemd/resolved.conf.backup
 sudo sed -i '/^DNS=/d' /etc/systemd/resolved.conf
 sudo sed -i '/^FallbackDNS=/d' /etc/systemd/resolved.conf
@@ -60,40 +67,49 @@ FallbackDNS=1.0.0.1 8.8.4.4
 EOL
 
 sudo systemctl restart systemd-resolved
-echo "DNS configuration updated successfully."
+echo -e "${GREEN}DNS configuration updated successfully.${NC}"
 resolvectl status
 
 # ----------------------------
 # Install and Configure Mailutils and Postfix
 # ----------------------------
 
-echo "Updating package list and installing mailutils and postfix..."
+echo -e "${YELLOW}Updating package list and installing mailutils and postfix...${NC}"
 sudo apt update -y
-sudo apt install -y unattended-upgrades apt-listchanges mailutils postfix || { echo "Package installation failed. Exiting."; exit 1; }
+sudo apt install -y unattended-upgrades apt-listchanges mailutils postfix || { echo -e "${RED}Package installation failed. Exiting.${NC}"; exit 1; }
+
+# Set domain for email sender address
+echo -e "${YELLOW}Enter the domain to use for email sender address (e.g., example.com):${NC}"
+read -p "> " email_domain
 
 # Function to configure and restart Postfix
 configure_postfix() {
-    echo "Configuring Postfix for direct send using an SMTP relay..."
+    echo -e "${YELLOW}Configuring Postfix for direct send using an SMTP relay...${NC}"
     read -p "Enter the SMTP relay server (e.g., smtp-relay.example.com): " smtp_server
     read -p "Enter the SMTP relay port (e.g., 25): " smtp_port
+
+    # Get the system hostname
+    system_hostname=$(hostname)
 
     # Configure Postfix for direct send with the specified relay
     sudo tee /etc/postfix/main.cf > /dev/null <<EOL
 relayhost = [$smtp_server]:$smtp_port
+myhostname = $system_hostname
+myorigin = $email_domain
 smtp_tls_security_level = may
 smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
 EOL
 
     # Restart Postfix to apply changes
-    echo "Restarting Postfix to apply new relay settings..."
+    echo -e "${GREEN}Restarting Postfix to apply new relay settings...${NC}"
     sudo systemctl restart postfix
 }
 
 # Test email function
 send_test_email() {
     read -p "Enter the email address to send a test email to: " test_email
-    echo "Mailutils and Postfix direct send setup complete" | mail -s "Test Email" "$test_email"
-    echo "A test email has been sent to $test_email."
+    echo -e "${GREEN}Mailutils and Postfix direct send setup complete${NC}" | mail -s "Test Email" "$test_email" -a "From: ${system_hostname}@${email_domain}"
+    echo -e "${YELLOW}A test email has been sent to $test_email.${NC}"
 }
 
 # Initial Postfix configuration
@@ -104,32 +120,32 @@ send_test_email
 while true; do
     read -p "Please check your inbox and confirm if you received the test email (Y/N): " email_received
     if [[ "$email_received" =~ ^[yY]([eE][sS])?$ ]]; then
-        echo "Email confirmed received. Postfix setup complete."
+        echo -e "${GREEN}Email confirmed received. Postfix setup complete.${NC}"
         break
     elif [[ "$email_received" =~ ^[nN]([oO])?$ ]]; then
-        echo "Email not received. Let's update the relay details and try again."
+        echo -e "${RED}Email not received. Let's update the relay details and try again.${NC}"
         configure_postfix
         send_test_email
     else
-        echo "Invalid input. Please enter Y (yes) or N (no)."
+        echo -e "${YELLOW}Invalid input. Please enter Y (yes) or N (no).${NC}"
     fi
 done
-echo "Postfix direct send setup complete."
+echo -e "${GREEN}Postfix direct send setup complete.${NC}"
 
 # ----------------------------
 # Configure Unattended Upgrades
 # ----------------------------
 
-echo "Configuring unattended-upgrades..."
+echo -e "${YELLOW}Configuring unattended-upgrades...${NC}"
 sudo dpkg-reconfigure --priority=low unattended-upgrades
 
-echo "Setting up automatic updates..."
+echo -e "${YELLOW}Setting up automatic updates...${NC}"
 sudo tee /etc/apt/apt.conf.d/20auto-upgrades > /dev/null <<EOL
 APT::Periodic::Update-Package-Lists "1";
 APT::Periodic::Unattended-Upgrade "1";
 EOL
 
-echo "Setting up email alerts for unattended upgrades..."
+echo -e "${YELLOW}Setting up email alerts for unattended upgrades...${NC}"
 sudo tee /etc/apt/apt.conf.d/50unattended-upgrades > /dev/null <<EOL
 Unattended-Upgrade::AutoFixInterruptedDpkg "true";
 Unattended-Upgrade::Mail "msanotifications@blackbirdit.com.au";
@@ -145,23 +161,23 @@ Unattended-Upgrade::Remove-Unused-Kernel-Packages "true";
 Unattended-Upgrade::Sender "$(hostname)"
 EOL
 
-echo "Testing unattended-upgrades setup..."
+echo -e "${YELLOW}Testing unattended-upgrades setup...${NC}"
 sudo unattended-upgrades --dry-run --debug
-echo "Automatic updates enabled, with email alerts configured."
+echo -e "${GREEN}Automatic updates enabled, with email alerts configured.${NC}"
 
 # ----------------------------
-# Nmap Installation
+# Nmap & Openscap Installation
 # ----------------------------
 
-echo "Installing nmap service..."
+echo -e "${YELLOW}Installing nmap service...${NC}"
 sudo apt-get install nmap -y
-
+sudo apt install openscap-scanner
 
 # ----------------------------
 # CyberCNS Probe Installation
 # ----------------------------
 
-echo "Starting CyberCNS Probe installation..."
+echo -e "${YELLOW}Starting CyberCNS Probe installation...${NC}"
 while true; do
     read -p "Please enter Company ID: " companyID
     read -p "Please enter Tenant ID: " tenantID
@@ -170,27 +186,27 @@ while true; do
     if [[ "$confirm" =~ ^[yY]([eE][sS])?$ ]]; then
         break
     else
-        echo "Please re-enter the Company ID and Tenant ID."
+        echo -e "${YELLOW}Please re-enter the Company ID and Tenant ID.${NC}"
     fi
 done
 
 # Download and install CyberCNS agent
-echo "Retrieving CyberCNS Linux agent download URL..."
+echo -e "${YELLOW}Retrieving CyberCNS Linux agent download URL...${NC}"
 linuxurl=$(curl -L -s -g "https://configuration.myconnectsecure.com/api/v4/configuration/agentlink?ostype=linux" | tr -d '"')
 if [[ -z "$linuxurl" ]]; then
-    echo "Failed to retrieve the agent link. Exiting."
+    echo -e "${RED}Failed to retrieve the agent link. Exiting.${NC}"
     exit 1
 fi
 
-echo "Downloading CyberCNS agent..."
+echo -e "${YELLOW}Downloading CyberCNS agent...${NC}"
 curl -k "$linuxurl" -o cybercnsagent_linux
 chmod +x cybercnsagent_linux
 
-echo "Running the CyberCNS Probe installer..."
+echo -e "${YELLOW}Running the CyberCNS Probe installer...${NC}"
 sudo ./cybercnsagent_linux -c "$companyID" -e "$tenantID" -j "2DdCvz91ijTjIZQcjpHFaoT1LIf_OMwApOrI_l4mrdnjR49WsQ1b2_Uy3a-W8latdMKfNnwHFGFAD5Vzvew0qViuYQQGOEnf6xGa2w" -i
 
 if [[ $? -eq 0 ]]; then
-    echo "CyberCNS Probe installed successfully."
+    echo -e "${GREEN}CyberCNS Probe installed successfully.${NC}"
 else
-    echo "Installation failed. Please check the provided details and try again."
+    echo -e "${RED}Installation failed. Please check the provided details and try again.${NC}"
 fi
