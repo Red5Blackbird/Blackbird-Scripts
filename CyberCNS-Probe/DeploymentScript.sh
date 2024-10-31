@@ -213,6 +213,52 @@ else
     echo -e "${RED}Installation failed. Please check the provided details and try again.${NC}"
 fi
 
+#-----------------------------
+# Deploy Sophos Linux Agent
+#-----------------------------
+echo "${YELLOW}Deploying Sophos Agent....${NC}"
+
+# Prompt for the URL
+echo -e "${YELLOW}Please enter the download URL:${NC}"
+read -p "> " url
+
+# Check if the URL is not empty
+if [[ -z "$url" ]]; then
+    echo -e "${RED}URL cannot be empty. Skipping.${NC}"
+    break
+fi
+
+# Get the filename from the URL
+filename=$(basename "$url")
+
+# Download the file using curl
+echo -e "${GREEN}Downloading file from URL...${NC}"
+curl -L -o "$filename" "$url"
+
+# Check if the file was downloaded successfully
+if [[ $? -ne 0 ]]; then
+    echo -e "${RED}Failed to download the file. Please check the URL and try again.${NC}"
+    break
+else
+    echo -e "${GREEN}File downloaded successfully as '$filename'.${NC}"
+fi
+
+# Make the file executable
+chmod +x "$filename"
+echo -e "${GREEN}Made '$filename' executable.${NC}"
+
+# Ask if the user wants to run the script
+echo -e "${YELLOW}Do you want to run '$filename' now? (y/n)${NC}"
+read -p "> " run_now
+
+# Run the file if the user confirms
+if [[ "$run_now" =~ ^[yY]$ ]]; then
+    echo -e "${GREEN}Running '$filename'...${NC}"
+    ./"$filename"
+else
+    echo -e "${YELLOW}You chose not to run the file.${NC}"
+fi
+
 # ----------------------------
 # Update ServerAdmin password
 # ----------------------------
