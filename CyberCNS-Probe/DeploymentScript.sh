@@ -151,7 +151,7 @@ deploy_sophos_agent() {
 
     printf "${YELLOW}Run '$filename' now? (y/n):${NC}\n"
     read -p "> " run_now
-    [[ "$run_now" =~ ^[yY]$ ]] && ./"$filename"
+    [[ "$run_now" =~ ^[yY]$ ]] && sudo ./"$filename"
 }
 
 # Update ServerAdmin password
