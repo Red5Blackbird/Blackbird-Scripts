@@ -23,7 +23,7 @@ This script automates the deployment and configuration of a CyberCNS probe on a 
 1. **Download the Script**
    - Use the following command to download, set execute permissions, and run the script:
      ```bash
-     Sudo curl -L -o DeploymentScript.sh "https://raw.githubusercontent.com/Red5Blackbird/Blackbird-Scripts/refs/heads/main/CyberCNS-Probe/DeploymentScript.sh" && chmod +x DeploymentScript.sh && ./DeploymentScript.sh
+     curl -L -o DeploymentScript.sh "https://raw.githubusercontent.com/Red5Blackbird/Blackbird-Scripts/refs/heads/main/CyberCNS-Probe/DeploymentScript.sh" && chmod +x DeploymentScript.sh && ./DeploymentScript.sh
      ```
 2. **Follow Prompts**
    - Enter required information when prompted:
