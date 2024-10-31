@@ -179,8 +179,8 @@ update_password() {
 printf "${GREEN}Starting CyberCNS Deployment Script...${NC}\n"
 
 set_hostname
-install_packages
 configure_dns
+install_packages
 configure_postfix
 configure_upgrades
 install_cybercns_probe
