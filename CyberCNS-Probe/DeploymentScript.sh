@@ -85,8 +85,8 @@ read -p "> " email_domain
 # Function to configure and restart Postfix
 configure_postfix() {
     echo -e "${YELLOW}Configuring Postfix for direct send using an SMTP relay...${NC}"
-    read -p "${YELLOW}Enter the SMTP relay server (e.g., smtp-relay.example.com):${NC} " smtp_server
-    read -p "${YELLOW}Enter the SMTP relay port (e.g., 25):${NC} " smtp_port
+    read -p "${YELLOW}Enter the SMTP relay server (e.g., smtp-relay.example.com):${NC}" smtp_server
+    read -p "${YELLOW}Enter the SMTP relay port (e.g., 25):${NC}" smtp_port
 
     # Get the system hostname
     system_hostname=$(hostname)
@@ -107,7 +107,7 @@ EOL
 
 # Test email function
 send_test_email() {
-    read -p "${YELLOW}Enter the email address to send a test email to:${NC} " test_email
+    read -p "${YELLOW}Enter the email address to send a test email to:${NC}" test_email
     echo -e "${GREEN}Mailutils and Postfix direct send setup complete${NC}" | mail -s "Test Email" "$test_email" -a "From: ${system_hostname}@${email_domain}"
     echo -e "${YELLOW}A test email has been sent to $test_email.${NC}"
 }
@@ -181,8 +181,8 @@ sudo apt install libopenscap8
 
 echo -e "${YELLOW}Starting CyberCNS Probe installation...${NC}"
 while true; do
-    read -p "${YELLOW}Please enter Company ID:${NC} " companyID
-    read -p "${YELLOW}Please enter Tenant ID:${NC} " tenantID
+    read -p "${YELLOW}Please enter Company ID:${NC}" companyID
+    read -p "${YELLOW}Please enter Tenant ID:${NC}" tenantID
 
     read -p "${YELLOW}You entered Company ID: $companyID and Tenant ID: $tenantID. Confirm? (Y/N):${NC}" confirm
     if [[ "$confirm" =~ ^[yY]([eE][sS])?$ ]]; then
@@ -266,9 +266,9 @@ username = "serveradmin"
 
 # Prompt for the new password
 echo -e "${YELLOW}Please enter a new password for '$username':${NC}"
-read -sp "${YELLOW}New password:${NC} " new_password
+read -sp "${YELLOW}New password:${NC}" new_password
 echo
-read -sp "${YELLOW}Confirm new password:${NC} " confirm_password
+read -sp "${YELLOW}Confirm new password:${NC}" confirm_password
 echo
 
 # Check if passwords match
