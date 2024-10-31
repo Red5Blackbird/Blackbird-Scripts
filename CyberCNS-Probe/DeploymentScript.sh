@@ -56,16 +56,18 @@ EOL
     printf "${GREEN}DNS configuration updated successfully.${NC}\n"
 }
 
-# Configure and test Postfix
+# Configure and test Postfix with verification loop
 configure_postfix() {
-    printf "${YELLOW}Enter email domain for sending email (e.g., example.com):${NC}\n"
-    read -p "> " email_domain
-    printf "${YELLOW}Enter SMTP relay server (e.g., smtp-relay.example.com):${NC}\n"
-    read -p "> " smtp_server
-    printf "${YELLOW}Enter SMTP relay port (e.g., 25):${NC}\n"
-    read -p "> " smtp_port
+    while true; do
+        printf "${YELLOW}Enter email domain for sending email (e.g., example.com):${NC}\n"
+        read -p "> " email_domain
+        printf "${YELLOW}Enter SMTP relay server (e.g., smtp-relay.example.com):${NC}\n"
+        read -p "> " smtp_server
+        printf "${YELLOW}Enter SMTP relay port (e.g., 25):${NC}\n"
+        read -p "> " smtp_port
 
-    sudo tee /etc/postfix/main.cf > /dev/null <<EOL
+        # Configure Postfix with the provided relay details
+        sudo tee /etc/postfix/main.cf > /dev/null <<EOL
 relayhost = [$smtp_server]:$smtp_port
 myhostname = $(hostname)
 myorigin = $email_domain
@@ -73,13 +75,30 @@ smtp_tls_security_level = may
 smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
 EOL
 
-    printf "${GREEN}Restarting Postfix to apply changes...${NC}\n"
-    sudo systemctl restart postfix
+        printf "${GREEN}Restarting Postfix to apply changes...${NC}\n"
+        sudo systemctl restart postfix
 
-    printf "${YELLOW}Enter email address to send a test email to:${NC}\n"
-    read -p "> " test_email
-    echo "Mailutils and Postfix setup complete" | mail -s "Test Email" "$test_email" -a "From: $(hostname)@$email_domain"
-    printf "${YELLOW}Test email sent to $test_email. Please verify.${NC}\n"
+        # Send a test email
+        printf "${YELLOW}Enter the email address to send a test email to:${NC}\n"
+        read -p "> " test_email
+        printf "${GREEN}Sending test email to $test_email...${NC}\n"
+        echo "Mailutils and Postfix direct send setup complete" | mail -s "Test Email" "$test_email" -a "From: $(hostname)@$email_domain"
+
+        # Prompt user to verify email receipt
+        while true; do
+            printf "${YELLOW}Check your inbox and confirm if you received the test email (Y/N):${NC} "
+            read -p "> " email_received
+            if [[ "$email_received" =~ ^[yY]([eE][sS])?$ ]]; then
+                printf "${GREEN}Email confirmed received. Postfix setup complete.${NC}\n"
+                return 0 # Exit the function if email received successfully
+            elif [[ "$email_received" =~ ^[nN]([oO])?$ ]]; then
+                printf "${RED}Email not received. Re-enter the SMTP relay details to try again.${NC}\n"
+                break # Exit the inner confirmation loop and retry the configuration
+            else
+                printf "${YELLOW}Invalid input. Please enter Y (yes) or N (no).${NC}\n"
+            fi
+        done
+    done
 }
 
 # Configure unattended upgrades with email alerts
@@ -187,4 +206,4 @@ install_cybercns_probe
 deploy_sophos_agent
 update_password
 
-printf "${GREEN}CyberCNS Deployment Script completed successfully!${NC}\n"
+printf "${GREEN}Probe Deployment Script completed successfully!${NC}\n"
