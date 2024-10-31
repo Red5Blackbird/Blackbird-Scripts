@@ -126,9 +126,9 @@ EOL
 # Install CyberCNS Probe
 install_cybercns_probe() {
     while true; do
-        printf "${YELLOW}Enter Company ID:${NC}\n"
+        printf "${YELLOW}Enter CyberCNS Company ID:${NC}\n"
         read -p "> " companyID
-        printf "${YELLOW}Enter Tenant ID:${NC}\n"
+        printf "${YELLOW}Enter CyberCNS Tenant ID:${NC}\n"
         read -p "> " tenantID
 
         printf "${YELLOW}Confirm details - Company ID: $companyID, Tenant ID: $tenantID (Y/N):${NC}\n"
