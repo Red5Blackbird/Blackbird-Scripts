@@ -167,8 +167,8 @@ update_password() {
 echo -e "${GREEN}Starting CyberCNS Deployment Script...${NC}"
 
 set_hostname
-install_packages
 configure_dns
+install_packages
 configure_postfix
 configure_upgrades
 install_cybercns_probe
