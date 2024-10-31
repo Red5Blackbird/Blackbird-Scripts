@@ -11,6 +11,7 @@ This script automates the deployment and configuration of a CyberCNS probe on a 
 - **Unattended Upgrades**: Enables and configures automatic updates with email alerts for package upgrades and security patches.
 - **CyberCNS Probe Installation**: Downloads and installs the CyberCNS agent using a provided `Company ID` and `Tenant ID`.
 - **User Password Update**: Allows updating the password for the `serveradmin` user securely.
+- **Sophos Agent Installtion**: Downloads and installs the Sophos Server Protection Agent from Sophos Central
 
 ## Requirements
 
@@ -29,3 +30,4 @@ This script automates the deployment and configuration of a CyberCNS probe on a 
      - New hostname
      - SMTP details
      - Company ID and Tenant ID for CyberCNS Probe
+     - Enter Sophos Agent Installer URL
