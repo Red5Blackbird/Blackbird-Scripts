@@ -37,7 +37,7 @@ set_hostname() {
 install_packages() {
     echo -e "${YELLOW}Installing Open VM Tools and other utilities...${NC}"
     sudo apt-get update -y
-    sudo apt-get install -y open-vm-tools unattended-upgrades apt-listchanges mailutils postfix nmap openscap-scanner libopenscap8 || { echo -e "${RED}Package installation failed. Exiting.${NC}"; exit 1; }
+    sudo apt-get install -y open-vm-tools unattended-upgrades apt-listchanges mailutils postfix nmap libopenscap8 || { echo -e "${RED}Package installation failed. Exiting.${NC}"; exit 1; }
 }
 
 # Configure DNS servers
