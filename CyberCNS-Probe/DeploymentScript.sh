@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Color codes
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-RED='\033[0;31m'
-NC='\033[0m' # No Color
+GREEN='\e[0;32m'
+YELLOW='\e[1;33m'
+RED='\e[0;31m'
+NC='\e[0m' # No Color
 
 #-----------------------------
 # CyberCNS Deployment Script
@@ -22,27 +22,27 @@ set_hostname() {
     echo -e "${YELLOW}Enter the new hostname:${NC}"
     read -p "> " new_hostname
     if [[ -z "$new_hostname" ]]; then
-        echo -e "${RED}Hostname cannot be empty. Exiting.${NC}"
+        printf "${RED}Hostname cannot be empty. Exiting.${NC}\n"
         exit 1
     fi
 
-    echo -e "${GREEN}Setting hostname to $new_hostname...${NC}"
+    printf "${GREEN}Setting hostname to $new_hostname...${NC}\n"
     sudo hostnamectl set-hostname "$new_hostname"
     echo "$new_hostname" | sudo tee /etc/hostname > /dev/null
     sudo sed -i "s/$(hostname)/$new_hostname/g" /etc/hosts
-    echo -e "${GREEN}Hostname updated successfully.${NC}"
+    printf "${GREEN}Hostname updated successfully.${NC}\n"
 }
 
 # Install required packages
 install_packages() {
-    echo -e "${YELLOW}Installing Open VM Tools and other utilities...${NC}"
+    printf "${YELLOW}Installing Open VM Tools and other utilities...${NC}\n"
     sudo apt-get update -y
-    sudo apt-get install -y open-vm-tools unattended-upgrades apt-listchanges mailutils postfix nmap libopenscap8 || { echo -e "${RED}Package installation failed. Exiting.${NC}"; exit 1; }
+    sudo apt-get install -y open-vm-tools unattended-upgrades apt-listchanges mailutils postfix nmap openscap-scanner libopenscap8 || { printf "${RED}Package installation failed. Exiting.${NC}\n"; exit 1; }
 }
 
 # Configure DNS servers
 configure_dns() {
-    echo -e "${YELLOW}Configuring DNS servers...${NC}"
+    printf "${YELLOW}Configuring DNS servers...${NC}\n"
     sudo cp /etc/systemd/resolved.conf /etc/systemd/resolved.conf.backup
     sudo sed -i '/^DNS=/d' /etc/systemd/resolved.conf
     sudo sed -i '/^FallbackDNS=/d' /etc/systemd/resolved.conf
@@ -53,14 +53,17 @@ FallbackDNS=1.0.0.1 8.8.4.4
 EOL
 
     sudo systemctl restart systemd-resolved
-    echo -e "${GREEN}DNS configuration updated successfully.${NC}"
+    printf "${GREEN}DNS configuration updated successfully.${NC}\n"
 }
 
 # Configure and test Postfix
 configure_postfix() {
-    read -p "${YELLOW}Enter email domain for sending email (e.g., example.com):${NC} " email_domain
-    read -p "${YELLOW}Enter SMTP relay server (e.g., smtp-relay.example.com):${NC} " smtp_server
-    read -p "${YELLOW}Enter SMTP relay port (e.g., 25):${NC} " smtp_port
+    printf "${YELLOW}Enter email domain for sending email (e.g., example.com):${NC}\n"
+    read -p "> " email_domain
+    printf "${YELLOW}Enter SMTP relay server (e.g., smtp-relay.example.com):${NC}\n"
+    read -p "> " smtp_server
+    printf "${YELLOW}Enter SMTP relay port (e.g., 25):${NC}\n"
+    read -p "> " smtp_port
 
     sudo tee /etc/postfix/main.cf > /dev/null <<EOL
 relayhost = [$smtp_server]:$smtp_port
@@ -70,18 +73,20 @@ smtp_tls_security_level = may
 smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
 EOL
 
-    echo -e "${GREEN}Restarting Postfix to apply changes...${NC}"
+    printf "${GREEN}Restarting Postfix to apply changes...${NC}\n"
     sudo systemctl restart postfix
 
-    read -p "${YELLOW}Enter email address to send a test email to:${NC} " test_email
+    printf "${YELLOW}Enter email address to send a test email to:${NC}\n"
+    read -p "> " test_email
     echo "Mailutils and Postfix setup complete" | mail -s "Test Email" "$test_email" -a "From: $(hostname)@$email_domain"
-    echo -e "${YELLOW}Test email sent to $test_email. Please verify.${NC}"
+    printf "${YELLOW}Test email sent to $test_email. Please verify.${NC}\n"
 }
 
 # Configure unattended upgrades with email alerts
 configure_upgrades() {
-    read -p "${YELLOW}Enter notifications email address for alerts:${NC} " email_alert
-    echo -e "${YELLOW}Configuring unattended-upgrades...${NC}"
+    printf "${YELLOW}Enter notifications email address for alerts:${NC}\n"
+    read -p "> " email_alert
+    printf "${YELLOW}Configuring unattended-upgrades...${NC}\n"
     
     sudo tee /etc/apt/apt.conf.d/20auto-upgrades > /dev/null <<EOL
 APT::Periodic::Update-Package-Lists "1";
@@ -96,83 +101,90 @@ Unattended-Upgrade::Automatic-Reboot "true";
 Unattended-Upgrade::Automatic-Reboot-Time "02:00";
 EOL
 
-    echo -e "${GREEN}Unattended upgrades with email alerts configured.${NC}"
+    printf "${GREEN}Unattended upgrades with email alerts configured.${NC}\n"
 }
 
 # Install CyberCNS Probe
 install_cybercns_probe() {
     while true; do
-        read -p "${YELLOW}Enter Company ID:${NC} " companyID
-        read -p "${YELLOW}Enter Tenant ID:${NC} " tenantID
+        printf "${YELLOW}Enter Company ID:${NC}\n"
+        read -p "> " companyID
+        printf "${YELLOW}Enter Tenant ID:${NC}\n"
+        read -p "> " tenantID
 
-        read -p "${YELLOW}Confirm details - Company ID: $companyID, Tenant ID: $tenantID (Y/N):${NC} " confirm
+        printf "${YELLOW}Confirm details - Company ID: $companyID, Tenant ID: $tenantID (Y/N):${NC}\n"
+        read -p "> " confirm
         if [[ "$confirm" =~ ^[yY]$ ]]; then
             break
         else
-            echo -e "${YELLOW}Please re-enter the Company ID and Tenant ID.${NC}"
+            printf "${YELLOW}Please re-enter the Company ID and Tenant ID.${NC}\n"
         fi
     done
 
     linuxurl=$(curl -L -s -g "https://configuration.myconnectsecure.com/api/v4/configuration/agentlink?ostype=linux" | tr -d '"')
     if [[ -z "$linuxurl" ]]; then
-        echo -e "${RED}Failed to retrieve agent link. Exiting.${NC}"
+        printf "${RED}Failed to retrieve agent link. Exiting.${NC}\n"
         exit 1
     fi
 
-    echo -e "${YELLOW}Downloading CyberCNS agent...${NC}"
+    printf "${YELLOW}Downloading CyberCNS agent...${NC}\n"
     curl -k "$linuxurl" -o cybercnsagent_linux
     chmod +x cybercnsagent_linux
 
-    echo -e "${YELLOW}Running CyberCNS Probe installer...${NC}"
+    printf "${YELLOW}Running CyberCNS Probe installer...${NC}\n"
     sudo ./cybercnsagent_linux -c "$companyID" -e "$tenantID" -j "2DdCvz91ijTjIZQcjpHFaoT1LIf_OMwApOrI_l4mrdnjR49WsQ1b2_Uy3a-W8latdMKfNnwHFGFAD5Vzvew0qViuYQQGOEnf6xGa2w" -i
 }
 
 # Deploy Sophos Agent
 deploy_sophos_agent() {
-    read -p "${YELLOW}Enter the Sophos agent download URL:${NC} " url
+    printf "${YELLOW}Enter the Sophos agent download URL:${NC}\n"
+    read -p "> " url
     if [[ -z "$url" ]]; then
-        echo -e "${RED}URL cannot be empty. Skipping.${NC}"
+        printf "${RED}URL cannot be empty. Skipping.${NC}\n"
         return
     fi
 
     filename=$(basename "$url")
-    echo -e "${YELLOW}Downloading Sophos agent...${NC}"
+    printf "${YELLOW}Downloading Sophos agent...${NC}\n"
     curl -L -o "$filename" "$url"
     chmod +x "$filename"
 
-    read -p "${YELLOW}Run '$filename' now? (y/n):${NC} " run_now
+    printf "${YELLOW}Run '$filename' now? (y/n):${NC}\n"
+    read -p "> " run_now
     [[ "$run_now" =~ ^[yY]$ ]] && ./"$filename"
 }
 
 # Update ServerAdmin password
 update_password() {
-    read -sp "${YELLOW}Enter new password for 'serveradmin':${NC} " new_password
+    printf "${YELLOW}Enter new password for 'serveradmin':${NC}\n"
+    read -sp "> " new_password
     echo
-    read -sp "${YELLOW}Confirm new password:${NC} " confirm_password
+    printf "${YELLOW}Confirm new password:${NC}\n"
+    read -sp "> " confirm_password
     echo
 
     if [[ "$new_password" != "$confirm_password" ]]; then
-        echo -e "${RED}Passwords do not match. Exiting.${NC}"
+        printf "${RED}Passwords do not match. Exiting.${NC}\n"
         exit 1
     fi
 
     echo "serveradmin:$new_password" | sudo chpasswd
-    echo -e "${GREEN}Password for 'serveradmin' successfully reset.${NC}"
+    printf "${GREEN}Password for 'serveradmin' successfully reset.${NC}\n"
 }
 
 # ----------------------------
 # Main Script Execution
 # ----------------------------
 
-echo -e "${GREEN}Starting CyberCNS Deployment Script...${NC}"
+printf "${GREEN}Starting CyberCNS Deployment Script...${NC}\n"
 
 set_hostname
-configure_dns
 install_packages
+configure_dns
 configure_postfix
 configure_upgrades
 install_cybercns_probe
 deploy_sophos_agent
 update_password
 
-echo -e "${GREEN}CyberCNS Deployment Script completed successfully!${NC}"
+printf "${GREEN}CyberCNS Deployment Script completed successfully!${NC}\n"
